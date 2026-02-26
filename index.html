@@ -1,203 +1,576 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Saree Inventory Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHILPA CREATION INVENTORY MANAGEMENT</title>
     <style>
         :root {
-            --primary: #6c5ce7;
-            --secondary: #a29bfe;
-            --success: #00b894;
-            --danger: #ff7675;
-            --info: #0984e3;
-            --dark: #2d3436;
-            --bg: #f0f2f5;
+            --primary: #222;
+            --bg: #f9f9f9;
+            --card: #ffffff;
+            --text: #222;
+            --accent: #007bff;
+            --danger: #ff4757;
+            --border: #eee;
         }
 
-        * { box-sizing: border-box; }
+        /* Dark Mode Colors */
+        [data-theme="dark"] {
+            --primary: #f9f9f9;
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #ffffff;
+            --accent: #379aff;
+            --danger: #ff5e6c;
+            --border: #333;
+        }
 
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            background-color: var(--bg); 
-            margin: 0; 
-            padding: 15px; 
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, sans-serif;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        .container { 
+        /* Theme Switcher */
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            z-index: 1001;
+        }
+
+        .theme-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
             width: 100%;
-            max-width: 500px; 
-            background: #fff; 
-            padding: 25px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 450px;
+            padding: 20px;
+            animation: fadeIn 0.2s;
+        }
+
+        .active-page {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        h2 {
+            font-weight: 500;
+            font-size: 22px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        /* Stats & Search */
+        .stats {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .stats b {
+            font-size: 26px;
+            color: var(--accent);
+        }
+
+        .stats p {
+            font-size: 11px;
+            color: #888;
+            margin: 5px 0 0 0;
+            text-transform: uppercase;
+        }
+
+        .main-search {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-size: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        /* Menu */
+        .menu-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .menu-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 15px 5px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .back-link {
+            color: var(--accent);
+            cursor: pointer;
+            display: block;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: var(--bg);
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Inventory Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .grid-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 8px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .grid-item p {
+            font-size: 13px;
+            margin: 8px 0;
+            font-weight: bold;
+        }
+
+        .item-checkbox {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 22px;
+            height: 22px;
+            z-index: 5;
+        }
+
+        .action-links {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .edit-btn {
+            flex: 1;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .del-btn {
+            flex: 1;
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* Modals */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+        }
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card);
+            color: var(--text);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            text-align: center;
+            width: 85%;
+            max-width: 320px;
+            animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popUp {
+            from {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .tick-icon {
+            width: 50px;
+            height: 50px;
+            background: #e3f2fd;
+            color: #2196f3;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 15px auto;
+        }
+
+        .result-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
             margin-bottom: 20px;
         }
 
-        h2 { text-align: center; color: var(--dark); margin-bottom: 20px; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; }
-
-        .section-label { font-weight: bold; font-size: 13px; color: #636e72; margin-top: 15px; display: block; text-transform: uppercase; }
-
-        input[type="text"], input[type="file"] { 
-            width: 100%; padding: 12px; margin: 8px 0 12px 0; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; 
+        .result-card img {
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
         }
 
-        button { 
-            width: 100%; padding: 14px; margin-top: 10px; border-radius: 10px; border: none; cursor: pointer; font-size: 16px; font-weight: bold; color: white; transition: 0.3s;
-        }
+        @media print {
+            .no-print {
+                display: none;
+            }
 
-        .save-btn { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
-        .search-btn { background: linear-gradient(135deg, var(--success), #55efc4); }
-        .view-all-btn { background: linear-gradient(135deg, var(--info), #74b9ff); margin-top: 20px; }
-        .backup-btn { background: var(--dark); margin-top: 10px; font-size: 14px; }
-        .delete-btn { background: var(--danger); display: none; margin-top: 15px; }
-
-        #displayArea { margin-top: 25px; text-align: center; }
-        #displayArea img { width: 100%; border-radius: 12px; margin-top: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-
-        /* Responsive Gallery Grid */
-        .all-products-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            width: 100%; 
-            max-width: 900px; 
-            margin-top: 20px; 
-        }
-
-        @media (min-width: 600px) { .all-products-grid { grid-template-columns: repeat(3, 1fr); } }
-
-        .product-card { background: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
-        .product-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; }
-        .product-card p { font-weight: bold; margin: 8px 0 0 0; color: var(--dark); font-size: 14px; }
-
-        hr { border: 0; height: 1px; background: #eee; margin: 25px 0; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>👗 Saree Inventory</h2>
-    
-    <span class="section-label">Add New Product</span>
-    <input type="text" id="skuInput" placeholder="Enter SKU ID (e.g. S-101)">
-    <input type="file" id="imageInput" accept="image/*"> 
-    <button class="save-btn" onclick="saveSaree()">SAVE PRODUCT +</button>
-
-    <hr>
-
-    <span class="section-label">Search & Manage</span>
-    <input type="text" id="searchInput" placeholder="Enter SKU to Search...">
-    <button class="search-btn" onclick="searchSaree()">SEARCH NOW 🔍</button>
-    <div id="displayArea"></div>
-    <button id="deleteBtn" class="delete-btn" onclick="deleteSaree()">DELETE THIS SKU 🗑️</button>
-
-    <button class="view-all-btn" onclick="viewAllProducts()">SHOW ALL PRODUCTS 📦</button>
-    
-    <hr>
-    
-    <button class="backup-btn" onclick="downloadBackup()">DOWNLOAD BACKUP 📥</button>
-    <input type="file" id="restoreInput" style="display:none" onchange="restoreBackup(event)">
-    <button class="backup-btn" style="background:#636e72;" onclick="document.getElementById('restoreInput').click()">RESTORE BACKUP 📤</button>
-</div>
-
-<div id="allProductsGrid" class="all-products-grid"></div>
-
-<script>
-    const DB_PREFIX = "SAREE_APP_";
-
-    function saveSaree() {
-        const sku = document.getElementById('skuInput').value.trim().toUpperCase();
-        const file = document.getElementById('imageInput').files[0];
-        if (!sku || !file) { alert("Please enter SKU and select Photo!"); return; }
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            localStorage.setItem(DB_PREFIX + sku, e.target.result);
-            alert("Product Saved Successfully!");
-            location.reload();
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function searchSaree() {
-        const sku = document.getElementById('searchInput').value.trim().toUpperCase();
-        const imageData = localStorage.getItem(DB_PREFIX + sku);
-        const displayArea = document.getElementById('displayArea');
-        const deleteBtn = document.getElementById('deleteBtn');
-        document.getElementById('allProductsGrid').innerHTML = "";
-
-        if (imageData) {
-            displayArea.innerHTML = `
-                <div style="background:var(--dark); color:white; padding:5px 15px; border-radius:20px; display:inline-block;">SKU: ${sku}</div>
-                <br><img src="${imageData}">
-            `;
-            deleteBtn.style.display = "block";
-        } else {
-            displayArea.innerHTML = `<p style="color:var(--danger); font-weight:bold;">❌ SKU Not Found!</p>`;
-            deleteBtn.style.display = "none";
-        }
-    }
-
-    function viewAllProducts() {
-        const grid = document.getElementById('allProductsGrid');
-        grid.innerHTML = "";
-        document.getElementById('displayArea').innerHTML = "";
-        document.getElementById('deleteBtn').style.display = "none";
-        
-        let found = false;
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.startsWith(DB_PREFIX)) {
-                found = true;
-                const sku = key.replace(DB_PREFIX, "");
-                const img = localStorage.getItem(key);
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `<img src="${img}"><p>${sku}</p>`;
-                grid.appendChild(card);
+            .page {
+                display: block;
+                max-width: 100%;
             }
         }
-        if (!found) alert("No products found in inventory.");
-    }
+    </style>
+</head>
 
-    function deleteSaree() {
-        const sku = document.getElementById('searchInput').value.trim().toUpperCase();
-        if (confirm("Delete SKU " + sku + "?")) {
-            localStorage.removeItem(DB_PREFIX + sku);
-            location.reload();
+<body>
+
+    <div class="theme-switch-wrapper no-print">
+        <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+
+    <div id="successModal" class="custom-modal">
+        <div class="tick-icon">✓</div>
+        <p style="font-weight: bold; margin: 0;" id="successMsg">Success!</p>
+    </div>
+
+    <div id="editModal" class="custom-modal">
+        <h3 style="margin: 0 0 10px 0;">Edit SKU ID</h3>
+        <p id="oldSkuLabel" style="font-size: 12px; opacity: 0.7; margin-bottom: 15px;"></p>
+        <input type="text" id="editSkuInput" placeholder="Enter new ID">
+        <div style="display: flex; gap: 10px;">
+            <button class="btn" style="background: #eee; color: #333;" onclick="closeAllModals()">Cancel</button>
+            <button class="btn" onclick="saveEditedSku()">Update</button>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="custom-modal">
+        <h3 style="margin: 0 0 10px 0; color: var(--danger);">Delete?</h3>
+        <p style="font-size: 14px; opacity: 0.8;">Remove this item from inventory?</p>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn" style="background: #eee; color: #333;" onclick="closeAllModals()">No</button>
+            <button class="btn" style="background: var(--danger);" id="confirmDelBtn">Yes, Delete</button>
+        </div>
+    </div>
+
+    <div id="homePage" class="page active-page">
+        <h2>SHILPA CREATION</h2>
+        <div class="stats"><b id="totalCount">0</b>
+            <p>TOTAL INVENTORY</p>
+        </div>
+        <input type="text" id="mainSearchInput" class="main-search" placeholder="🔍 Search SKU ID..."
+            oninput="liveSearch()">
+        <div id="quickResult"></div>
+        <div class="menu-row">
+            <div class="menu-btn" onclick="showPage('addPage')">➕<br>Add New</div>
+            <div class="menu-btn" onclick="showPage('viewPage'); renderAll();">📦<br>Inventory</div>
+            <div class="menu-btn" onclick="showPage('settingsPage')">⚙️<br>Backup</div>
+        </div>
+    </div>
+
+    <div id="addPage" class="page">
+        <span class="back-link" onclick="showPage('homePage')">← Back</span>
+        <h2>Add New Saree</h2>
+        <input type="text" id="skuInput" placeholder="Enter SKU ID">
+        <input type="file" id="imageInput" accept="image/*">
+        <button class="btn" onclick="saveData()">Save Product</button>
+    </div>
+
+    <div id="viewPage" class="page">
+        <span class="back-link no-print" onclick="showPage('homePage')">← Back</span>
+        <h2>All Products</h2>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;" class="no-print">
+            <button class="btn" style="background: #eee; color: #333; padding: 10px;" onclick="toggleSelectAll()"
+                id="selAllBtn">Select All</button>
+            <button class="btn" style="background: var(--danger); padding: 10px;" onclick="bulkDeleteConfirm()">Delete
+                Selected</button>
+        </div>
+        <div id="allList" class="grid"></div>
+    </div>
+
+    <div id="settingsPage" class="page">
+        <span class="back-link" onclick="showPage('homePage')">← Back</span>
+        <h2>Backup & Restore</h2>
+        <button class="btn" onclick="downloadBackup()" style="margin-bottom:10px; background: #444;">Download
+            JSON</button>
+        <input type="file" id="restoreFile" style="display:none" onchange="restoreData(event)">
+        <button class="btn" onclick="document.getElementById('restoreFile').click()" style="background: #666;">Restore
+            Data</button>
+    </div>
+
+    <script>
+        const KEY = "SAR_DATA_";
+        let isAllSelected = false;
+        let currentActionKey = "";
+
+        // --- Theme Logic ---
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', target);
+            localStorage.setItem('inventory-theme', target);
+            document.getElementById('themeBtn').innerText = target === 'dark' ? '☀️' : '🌙';
         }
-    }
 
-    function downloadBackup() {
-        let backup = {};
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.startsWith(DB_PREFIX)) backup[key] = localStorage.getItem(key);
+        // Load saved theme
+        const savedTheme = localStorage.getItem('inventory-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeBtn').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
+
+        updateCounter();
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(pageId).classList.add('active-page');
+            if (pageId === 'homePage') { updateCounter(); document.getElementById('quickResult').innerHTML = ""; }
         }
-        const blob = new Blob([JSON.stringify(backup)], { type: "application/json" });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = "inventory_backup.json";
-        a.click();
-    }
 
-    function restoreBackup(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = JSON.parse(e.target.result);
-            Object.keys(data).forEach(key => localStorage.setItem(key, data[key]));
-            alert("Backup Restored!");
-            location.reload();
-        };
-        reader.readAsText(file);
-    }
-</script>
+        function updateCounter() {
+            let count = 0;
+            for (let i = 0; i < localStorage.length; i++) { if (localStorage.key(i).startsWith(KEY)) count++; }
+            document.getElementById('totalCount').innerText = count;
+        }
 
+        function closeAllModals() {
+            document.getElementById('overlay').style.display = 'none';
+            document.querySelectorAll('.custom-modal').forEach(m => m.style.display = 'none');
+        }
+
+        function showSuccess(msg) {
+            const m = document.getElementById('successModal');
+            document.getElementById('successMsg').innerText = msg;
+            m.style.display = 'block';
+            setTimeout(() => { m.style.display = 'none'; }, 2000);
+        }
+
+        function saveData() {
+            const sIn = document.getElementById('skuInput');
+            const fIn = document.getElementById('imageInput');
+            const sku = sIn.value.trim().toUpperCase();
+            if (!sku || !fIn.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                localStorage.setItem(KEY + sku, e.target.result);
+                sIn.value = ""; fIn.value = "";
+                showSuccess("Product Successfully Added");
+                updateCounter();
+            };
+            reader.readAsDataURL(fIn.files[0]);
+        }
+
+        function openEditModal(key) {
+            currentActionKey = key;
+            const oldSku = key.replace(KEY, "");
+            document.getElementById('oldSkuLabel').innerText = "Current ID: " + oldSku;
+            document.getElementById('editSkuInput').value = oldSku;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function saveEditedSku() {
+            const newSku = document.getElementById('editSkuInput').value.trim().toUpperCase();
+            if (!newSku) return;
+            const oldSku = currentActionKey.replace(KEY, "");
+            if (newSku === oldSku) return closeAllModals();
+            const imgData = localStorage.getItem(currentActionKey);
+            localStorage.setItem(KEY + newSku, imgData);
+            localStorage.removeItem(currentActionKey);
+            closeAllModals();
+            showSuccess("SKU ID Updated!");
+            if (document.getElementById('viewPage').classList.contains('active-page')) renderAll();
+            else liveSearch();
+        }
+
+        function deleteSingle(key) {
+            currentActionKey = key;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('deleteModal').style.display = 'block';
+            document.getElementById('confirmDelBtn').onclick = function () {
+                localStorage.removeItem(currentActionKey);
+                closeAllModals();
+                if (document.getElementById('viewPage').classList.contains('active-page')) renderAll();
+                else liveSearch();
+                updateCounter();
+            };
+        }
+
+        function bulkDeleteConfirm() {
+            const sel = document.querySelectorAll('.item-checkbox:checked');
+            if (sel.length === 0) return;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('deleteModal').style.display = 'block';
+            document.getElementById('confirmDelBtn').onclick = function () {
+                sel.forEach(cb => localStorage.removeItem(cb.getAttribute('data-key')));
+                closeAllModals();
+                renderAll();
+                updateCounter();
+            };
+        }
+
+        function liveSearch() {
+            const q = document.getElementById('mainSearchInput').value.trim().toUpperCase();
+            const res = document.getElementById('quickResult');
+            if (!q) { res.innerHTML = ""; return; }
+            const data = localStorage.getItem(KEY + q);
+            if (data) {
+                res.innerHTML = `<div class="result-card"><b>SKU: ${q}</b><img src="${data}"><div class="action-links">
+                <button class="edit-btn" onclick="openEditModal('${KEY + q}')">Edit</button>
+                <button class="del-btn" onclick="deleteSingle('${KEY + q}')">Delete</button></div></div>`;
+            }
+        }
+
+        function renderAll() {
+            const list = document.getElementById('allList');
+            list.innerHTML = "";
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k.startsWith(KEY)) {
+                    const sku = k.replace(KEY, "");
+                    list.innerHTML += `<div class="grid-item">
+                        <input type="checkbox" class="item-checkbox" data-key="${k}">
+                        <img src="${localStorage.getItem(k)}"><p>${sku}</p>
+                        <div class="action-links">
+                            <button class="edit-btn" onclick="openEditModal('${k}')">Edit</button>
+                            <button class="del-btn" onclick="deleteSingle('${k}')">Delete</button>
+                        </div></div>`;
+                }
+            }
+        }
+
+        function toggleSelectAll() {
+            isAllSelected = !isAllSelected;
+            document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = isAllSelected);
+            document.getElementById('selAllBtn').innerText = isAllSelected ? "Unselect All" : "Select All";
+        }
+
+        function downloadBackup() {
+            let obj = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k.startsWith(KEY)) obj[k] = localStorage.getItem(k);
+            }
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(obj)], { type: "application/json" }));
+            a.download = "inventory.json"; a.click();
+        }
+
+        function restoreData(e) {
+            const r = new FileReader();
+            r.onload = (ev) => {
+                const data = JSON.parse(ev.target.result);
+                Object.keys(data).forEach(k => { if (k.startsWith(KEY)) localStorage.setItem(k, data[k]); });
+                location.reload();
+            };
+            r.readAsText(e.target.files[0]);
+        }
+    </script>
 </body>
+
 </html>

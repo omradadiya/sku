@@ -1,388 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSHILPA CREATION INVENTORY</title>
+    <title>Saree Inventory Cloud Pro</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database-compat.js"></script>
     <style>
-        :root {
-            --primary: #222;
-            --bg: #f9f9f9;
-            --card: #ffffff;
-            --text: #222;
-            --accent: #007bff;
-            --danger: #ff4757;
-            --border: #eee;
-            --success: #28a745;
+        :root { 
+            --primary: #222; --bg: #f9f9f9; --card: #ffffff; --text: #222; 
+            --accent: #007bff; --danger: #ff4757; --border: #eee; --success: #28a745;
         }
-
         [data-theme="dark"] {
-            --primary: #f9f9f9;
-            --bg: #121212;
-            --card: #1e1e1e;
-            --text: #ffffff;
-            --accent: #379aff;
-            --danger: #ff5e6c;
-            --border: #333;
+            --primary: #f9f9f9; --bg: #121212; --card: #1e1e1e; --text: #ffffff; 
+            --accent: #379aff; --danger: #ff5e6c; --border: #333;
         }
+        * { box-sizing: border-box; font-family: -apple-system, sans-serif; transition: background 0.3s, color 0.3s; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        .theme-switch-wrapper { position: absolute; top: 15px; right: 20px; z-index: 1001; }
+        .theme-btn { background: var(--card); border: 1px solid var(--border); padding: 8px; border-radius: 50%; cursor: pointer; font-size: 18px; }
 
-        * {
-            box-sizing: border-box;
-            font-family: -apple-system, sans-serif;
-            transition: background 0.3s, color 0.3s;
-        }
+        .page { display: none; width: 100%; max-width: 450px; padding: 20px; animation: fadeIn 0.2s; }
+        .active-page { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        body {
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        h2 { font-weight: 500; font-size: 22px; text-align: center; margin: 20px 0; }
+        .stats { background: var(--card); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; border: 1px solid var(--border); }
+        .stats b { font-size: 26px; color: var(--accent); }
+        .main-search { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); margin-bottom: 20px; }
+        
+        .menu-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; }
+        .menu-btn { background: var(--card); border: 1px solid var(--border); padding: 15px 5px; border-radius: 12px; text-align: center; cursor: pointer; font-size: 12px; color: var(--text); }
+        
+        .back-link { color: var(--accent); cursor: pointer; display: block; margin-bottom: 20px; font-size: 14px; }
+        input[type="text"] { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); }
+        
+        /* File Upload UI */
+        .file-upload-wrapper { width: 100%; position: relative; margin-bottom: 20px; }
+        .file-upload-box { width: 100%; height: 120px; border: 2px dashed var(--accent); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--card); color: var(--accent); }
+        .file-upload-box.has-file { border-color: var(--success); color: var(--success); }
+        #imageInput { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
 
-        .theme-switch-wrapper {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            z-index: 1001;
-        }
+        .btn { width: 100%; padding: 14px; background: var(--primary); color: var(--bg); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-pdf { background: var(--success); color: white; margin-bottom: 15px; }
 
-        .theme-btn {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 8px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-item { background: var(--card); border: 1px solid var(--border); padding: 8px; border-radius: 12px; text-align: center; position: relative; }
+        .grid-item img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; }
+        .grid-item p { font-size: 13px; margin: 8px 0; font-weight: bold; }
+        
+        .item-checkbox { position: absolute; top: 10px; left: 10px; width: 22px; height: 22px; z-index: 5; }
+        .action-links { display: flex; gap: 5px; margin-top: 5px; }
+        .edit-btn { flex: 1; background: var(--accent); color: white; border: none; padding: 6px; border-radius: 6px; font-size: 11px; }
+        .del-btn { flex: 1; background: var(--danger); color: white; border: none; padding: 6px; border-radius: 6px; font-size: 11px; }
 
-        .page {
-            display: none;
-            width: 100%;
-            max-width: 450px;
-            padding: 20px;
-            animation: fadeIn 0.2s;
-        }
-
-        .active-page {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        h2 {
-            font-weight: 500;
-            font-size: 22px;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .stats {
-            background: var(--card);
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-        }
-
-        .stats b {
-            font-size: 26px;
-            color: var(--accent);
-        }
-
-        .main-search {
-            width: 100%;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--text);
-            margin-bottom: 20px;
-        }
-
-        .menu-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .menu-btn {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 15px 5px;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 12px;
-            color: var(--text);
-        }
-
-        .back-link {
-            color: var(--accent);
-            cursor: pointer;
-            display: block;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 15px;
-            background: var(--card);
-            color: var(--text);
-        }
-
-        /* --- ATTRACTIVE FILE INPUT BOX --- */
-        .file-upload-wrapper {
-            width: 100%;
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .file-upload-box {
-            width: 100%;
-            height: 120px;
-            border: 2px dashed var(--accent);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: var(--card);
-            cursor: pointer;
-            transition: 0.3s;
-            color: var(--accent);
-        }
-
-        .file-upload-box:hover {
-            background: rgba(0, 123, 255, 0.05);
-        }
-
-        .file-upload-box.has-file {
-            border-color: var(--success);
-            color: var(--success);
-            background: rgba(40, 167, 69, 0.05);
-        }
-
-        .file-upload-box i {
-            font-size: 30px;
-            margin-bottom: 8px;
-        }
-
-        .file-upload-box span {
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        #imageInput {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: var(--bg);
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-pdf {
-            background: var(--success);
-            color: white;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .grid-item {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 8px;
-            border-radius: 12px;
-            text-align: center;
-            position: relative;
-        }
-
-        .grid-item img {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .grid-item p {
-            font-size: 13px;
-            margin: 8px 0;
-            font-weight: bold;
-        }
-
-        .item-checkbox {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 22px;
-            height: 22px;
-            z-index: 5;
-        }
-
-        .action-links {
-            display: flex;
-            gap: 5px;
-            margin-top: 5px;
-        }
-
-        .edit-btn {
-            flex: 1;
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 11px;
-            cursor: pointer;
-        }
-
-        .del-btn {
-            flex: 1;
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 11px;
-            cursor: pointer;
-        }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 999;
-        }
-
-        .custom-modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--card);
-            color: var(--text);
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            text-align: center;
-            width: 85%;
-            max-width: 320px;
-            animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popUp {
-            from {
-                transform: translate(-50%, -50%) scale(0.8);
-                opacity: 0;
-            }
-
-            to {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-        }
-
-        .tick-icon {
-            width: 50px;
-            height: 50px;
-            background: #e3f2fd;
-            color: #2196f3;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin: 0 auto 15px auto;
-        }
+        /* Modals */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; }
+        .custom-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); color: var(--text); padding: 25px; border-radius: 20px; z-index: 1000; text-align: center; width: 85%; max-width: 320px; }
+        
+        #loading { display: none; position: fixed; top: 10px; background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; z-index: 2000; }
 
         @media print {
-            body {
-                background: white;
-                color: black;
-            }
-
-            .no-print,
-            .theme-switch-wrapper,
-            .back-link,
-            .action-links,
-            .item-checkbox,
-            .btn,
-            .theme-btn {
-                display: none !important;
-            }
-
-            .page {
-                display: block !important;
-                max-width: 100% !important;
-                padding: 0 !important;
-            }
-
-            .grid {
-                grid-template-columns: 1fr 1fr 1fr !important;
-                gap: 10px !important;
-            }
-
-            .grid-item {
-                border: 1px solid #ddd !important;
-                background: white !important;
-                color: black !important;
-            }
-
-            h2 {
-                margin-top: 0;
-                color: black;
-            }
+            .no-print, .theme-switch-wrapper, .back-link, .action-links, .item-checkbox, .btn, .theme-btn { display: none !important; }
+            .page { display: block !important; max-width: 100% !important; }
+            .grid { grid-template-columns: 1fr 1fr 1fr !important; }
         }
     </style>
 </head>
-
 <body>
+
+    <div id="loading">Syncing...</div>
 
     <div class="theme-switch-wrapper no-print">
         <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
@@ -391,14 +79,14 @@
     <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 
     <div id="successModal" class="custom-modal">
-        <div class="tick-icon">✓</div>
-        <p style="font-weight: bold; margin: 0;" id="successMsg">Success!</p>
+        <div style="font-size: 40px; color: var(--success);">✓</div>
+        <p style="font-weight: bold;" id="successMsg">Success!</p>
     </div>
 
     <div id="editModal" class="custom-modal">
-        <h3 style="margin: 0 0 10px 0;">Edit SKU ID</h3>
-        <p id="oldSkuLabel" style="font-size: 12px; opacity: 0.7; margin-bottom: 15px;"></p>
-        <input type="text" id="editSkuInput" placeholder="Enter new ID">
+        <h3>Edit SKU ID</h3>
+        <p id="oldSkuLabel" style="font-size: 12px; opacity: 0.7;"></p>
+        <input type="text" id="editSkuInput">
         <div style="display: flex; gap: 10px;">
             <button class="btn" style="background: #eee; color: #333;" onclick="closeAllModals()">Cancel</button>
             <button class="btn" onclick="saveEditedSku()">Update</button>
@@ -406,8 +94,8 @@
     </div>
 
     <div id="deleteModal" class="custom-modal">
-        <h3 style="margin: 0 0 10px 0; color: var(--danger);">Delete?</h3>
-        <p style="font-size: 14px; opacity: 0.8;">Remove this item?</p>
+        <h3 style="color: var(--danger);">Delete?</h3>
+        <p>This will be removed from all devices.</p>
         <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button class="btn" style="background: #eee; color: #333;" onclick="closeAllModals()">No</button>
             <button class="btn" style="background: var(--danger);" id="confirmDelBtn">Yes, Delete</button>
@@ -415,17 +103,14 @@
     </div>
 
     <div id="homePage" class="page active-page">
-        <h2>SHILPA CREATION</h2>
-        <div class="stats"><b id="totalCount">0</b>
-            <p>Items in Stock</p>
-        </div>
-        <input type="text" id="mainSearchInput" class="main-search no-print" placeholder="🔍 Search SKU ID..."
-            oninput="liveSearch()">
+        <h2>Cloud Inventory</h2>
+        <div class="stats"><b id="totalCount">0</b><p>Total Items Syncing</p></div>
+        <input type="text" id="mainSearchInput" class="main-search no-print" placeholder="🔍 Search SKU..." oninput="liveSearch()">
         <div id="quickResult"></div>
         <div class="menu-row no-print">
             <div class="menu-btn" onclick="showPage('addPage')">➕<br>Add New</div>
-            <div class="menu-btn" onclick="showPage('viewPage'); renderAll();">📦<br>Inventory</div>
-            <div class="menu-btn" onclick="showPage('settingsPage')">⚙️<br>Backup</div>
+            <div class="menu-btn" onclick="showPage('viewPage')">📦<br>Inventory</div>
+            <div class="menu-btn" onclick="showPage('settingsPage')">⚙️<br>Settings</div>
         </div>
     </div>
 
@@ -433,62 +118,65 @@
         <span class="back-link" onclick="showPage('homePage')">← Back</span>
         <h2>Add New Saree</h2>
         <input type="text" id="skuInput" placeholder="Enter SKU ID">
-
         <div class="file-upload-wrapper">
             <div class="file-upload-box" id="dropBox">
-                <i id="uploadIcon">📷</i>
-                <span id="fileNameDisplay">Tap to Select Photo</span>
+                <span id="fileNameDisplay">📷 Tap to Select Photo</span>
                 <input type="file" id="imageInput" accept="image/*" onchange="updateFileName()">
             </div>
         </div>
-
-        <button class="btn" onclick="saveData()">Save Product</button>
+        <button class="btn" id="saveBtn" onclick="saveData()">Save to Cloud</button>
     </div>
 
     <div id="viewPage" class="page">
         <span class="back-link no-print" onclick="showPage('homePage')">← Back</span>
-        <h2 id="reportTitle">Stock Inventory</h2>
+        <h2>Live Stock</h2>
         <button class="btn btn-pdf no-print" onclick="window.print()">📥 Download PDF Report</button>
         <div style="display: flex; gap: 10px; margin-bottom: 15px;" class="no-print">
-            <button class="btn" style="background: #eee; color: #333; padding: 10px;" onclick="toggleSelectAll()"
-                id="selAllBtn">Select All</button>
-            <button class="btn" style="background: var(--danger); padding: 10px;" onclick="bulkDeleteConfirm()">Delete
-                Selected</button>
+            <button class="btn" style="background: #eee; color: #333; padding: 10px;" onclick="toggleSelectAll()" id="selAllBtn">Select All</button>
+            <button class="btn" style="background: var(--danger); padding: 10px;" onclick="bulkDeleteConfirm()">Delete Selected</button>
         </div>
         <div id="allList" class="grid"></div>
     </div>
 
     <div id="settingsPage" class="page">
         <span class="back-link" onclick="showPage('homePage')">← Back</span>
-        <h2>Backup & Restore</h2>
-        <button class="btn" onclick="downloadBackup()" style="margin-bottom:10px; background: #444;">Download
-            JSON</button>
-        <input type="file" id="restoreFile" style="display:none" onchange="restoreData(event)">
-        <button class="btn" onclick="document.getElementById('restoreFile').click()" style="background: #666;">Restore
-            Data</button>
+        <h2>System</h2>
+        <p style="text-align: center; font-size: 13px; opacity: 0.6;">Connected to Firebase Cloud</p>
+        <button class="btn" style="background: var(--danger);" onclick="localStorage.clear(); location.reload();">Reset App Cache</button>
     </div>
 
     <script>
-        const KEY = "SAR_DATA_";
-        let isAllSelected = false;
+        // --- Firebase Config ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBk9p0rMNCvItvW3Hrmo8Uywtz_EZa0Yns",
+            authDomain: "my-inventory-e25ca.firebaseapp.com",
+            databaseURL: "https://my-inventory-e25ca-default-rtdb.firebaseio.com",
+            projectId: "my-inventory-e25ca",
+            storageBucket: "my-inventory-e25ca.firebasestorage.app",
+            messagingSenderId: "267785565793",
+            appId: "1:267785565793:web:ec98d0160528792fd61c20"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database().ref("inventory");
+
+        let inventoryData = {};
         let currentActionKey = "";
+        let isAllSelected = false;
 
-        // File Input UI Update
-        function updateFileName() {
-            const input = document.getElementById('imageInput');
-            const box = document.getElementById('dropBox');
-            const label = document.getElementById('fileNameDisplay');
-            const icon = document.getElementById('uploadIcon');
+        // --- Realtime Sync ---
+        db.on('value', (snapshot) => {
+            inventoryData = snapshot.val() || {};
+            updateCounter();
+            if (document.getElementById('viewPage').classList.contains('active-page')) renderAll();
+            liveSearch();
+            document.getElementById('loading').style.display = 'none';
+        });
 
-            if (input.files.length > 0) {
-                label.innerText = "Photo Selected: " + input.files[0].name;
-                box.classList.add('has-file');
-                icon.innerText = "✅";
-            } else {
-                label.innerText = "Tap to Select Photo";
-                box.classList.remove('has-file');
-                icon.innerText = "📷";
-            }
+        function showLoading() { document.getElementById('loading').style.display = 'block'; }
+
+        function updateCounter() {
+            document.getElementById('totalCount').innerText = Object.keys(inventoryData).length;
         }
 
         function toggleTheme() {
@@ -498,127 +186,111 @@
             localStorage.setItem('inventory-theme', target);
             document.getElementById('themeBtn').innerText = target === 'dark' ? '☀️' : '🌙';
         }
-        const savedTheme = localStorage.getItem('inventory-theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
+        if(localStorage.getItem('inventory-theme') === 'dark') toggleTheme();
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
             document.getElementById(pageId).classList.add('active-page');
-            updateCounter();
-            // Reset file input box UI when page changes
-            document.getElementById('imageInput').value = "";
-            updateFileName();
+            if(pageId === 'viewPage') renderAll();
         }
 
-        function updateCounter() {
-            let count = 0;
-            for (let i = 0; i < localStorage.length; i++) { if (localStorage.key(i).startsWith(KEY)) count++; }
-            document.getElementById('totalCount').innerText = count;
-        }
-
-        function closeAllModals() {
-            document.getElementById('overlay').style.display = 'none';
-            document.querySelectorAll('.custom-modal').forEach(m => m.style.display = 'none');
-        }
-
-        function showSuccess(msg) {
-            const m = document.getElementById('successModal');
-            document.getElementById('successMsg').innerText = msg;
-            m.style.display = 'block';
-            setTimeout(() => { m.style.display = 'none'; }, 2000);
+        function updateFileName() {
+            const f = document.getElementById('imageInput').files[0];
+            document.getElementById('fileNameDisplay').innerText = f ? "✅ " + f.name : "📷 Tap to Select Photo";
+            document.getElementById('dropBox').classList.toggle('has-file', !!f);
         }
 
         function saveData() {
-            const sIn = document.getElementById('skuInput');
-            const fIn = document.getElementById('imageInput');
-            const sku = sIn.value.trim().toUpperCase();
-            if (!sku || !fIn.files[0]) { alert("Please enter SKU and select Photo!"); return; }
+            const sku = document.getElementById('skuInput').value.trim().toUpperCase();
+            const file = document.getElementById('imageInput').files[0];
+            if (!sku || !file) return alert("Missing SKU or Photo");
+
+            showLoading();
             const reader = new FileReader();
             reader.onload = (e) => {
-                localStorage.setItem(KEY + sku, e.target.result);
-                sIn.value = ""; fIn.value = "";
-                updateFileName();
-                showSuccess("Product Successfully Added");
-                updateCounter();
+                db.child(sku).set(e.target.result).then(() => {
+                    document.getElementById('skuInput').value = "";
+                    document.getElementById('imageInput').value = "";
+                    updateFileName();
+                    showSuccess("Saved to Cloud!");
+                });
             };
-            reader.readAsDataURL(fIn.files[0]);
+            reader.readAsDataURL(file);
         }
 
-        function openEditModal(key) {
-            currentActionKey = key;
-            document.getElementById('oldSkuLabel').innerText = "Current ID: " + key.replace(KEY, "");
-            document.getElementById('editSkuInput').value = key.replace(KEY, "");
+        function renderAll() {
+            const list = document.getElementById('allList');
+            list.innerHTML = "";
+            Object.keys(inventoryData).sort().forEach(sku => {
+                list.innerHTML += `<div class="grid-item">
+                    <input type="checkbox" class="item-checkbox no-print" data-sku="${sku}">
+                    <img src="${inventoryData[sku]}"><p>${sku}</p>
+                    <div class="action-links no-print">
+                        <button class="edit-btn" onclick="openEditModal('${sku}')">Edit</button>
+                        <button class="del-btn" onclick="deleteItem('${sku}')">Delete</button>
+                    </div></div>`;
+            });
+        }
+
+        function liveSearch() {
+            const q = document.getElementById('mainSearchInput').value.trim().toUpperCase();
+            const res = document.getElementById('quickResult');
+            if (!q || !inventoryData[q]) { res.innerHTML = ""; return; }
+            res.innerHTML = `<div class="grid-item" style="width:100%; max-width:200px; margin: 0 auto 20px auto;">
+                <img src="${inventoryData[q]}"><p>${q}</p>
+                <div class="action-links no-print">
+                    <button class="edit-btn" onclick="openEditModal('${q}')">Edit</button>
+                    <button class="del-btn" onclick="deleteItem('${q}')">Delete</button>
+                </div></div>`;
+        }
+
+        function openEditModal(sku) {
+            currentActionKey = sku;
+            document.getElementById('oldSkuLabel').innerText = "Changing SKU: " + sku;
+            document.getElementById('editSkuInput').value = sku;
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('editModal').style.display = 'block';
         }
 
         function saveEditedSku() {
             const newSku = document.getElementById('editSkuInput').value.trim().toUpperCase();
-            if (!newSku) return;
-            const imgData = localStorage.getItem(currentActionKey);
-            localStorage.setItem(KEY + newSku, imgData);
-            localStorage.removeItem(currentActionKey);
-            closeAllModals();
-            showSuccess("SKU ID Updated!");
-            if (document.getElementById('viewPage').classList.contains('active-page')) renderAll();
-            else liveSearch();
+            if (!newSku || newSku === currentActionKey) return closeAllModals();
+            showLoading();
+            const data = inventoryData[currentActionKey];
+            db.child(newSku).set(data).then(() => {
+                db.child(currentActionKey).remove();
+                closeAllModals();
+                showSuccess("SKU Updated!");
+            });
         }
 
-        function deleteSingle(key) {
-            currentActionKey = key;
+        function deleteItem(sku) {
+            currentActionKey = sku;
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('deleteModal').style.display = 'block';
-            document.getElementById('confirmDelBtn').onclick = function () {
-                localStorage.removeItem(currentActionKey);
-                closeAllModals();
-                if (document.getElementById('viewPage').classList.contains('active-page')) renderAll();
-                else liveSearch();
-                updateCounter();
+            document.getElementById('confirmDelBtn').onclick = () => {
+                showLoading();
+                db.child(sku).remove().then(() => {
+                    closeAllModals();
+                    showSuccess("Deleted!");
+                });
             };
         }
 
         function bulkDeleteConfirm() {
-            const sel = document.querySelectorAll('.item-checkbox:checked');
-            if (sel.length === 0) return;
+            const selected = Array.from(document.querySelectorAll('.item-checkbox:checked')).map(cb => cb.dataset.sku);
+            if (selected.length === 0) return;
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('deleteModal').style.display = 'block';
-            document.getElementById('confirmDelBtn').onclick = function () {
-                sel.forEach(cb => localStorage.removeItem(cb.getAttribute('data-key')));
-                closeAllModals();
-                renderAll();
-                updateCounter();
+            document.getElementById('confirmDelBtn').onclick = () => {
+                showLoading();
+                const updates = {};
+                selected.forEach(sku => updates[sku] = null);
+                db.update(updates).then(() => {
+                    closeAllModals();
+                    showSuccess("Bulk Delete Done!");
+                });
             };
-        }
-
-        function liveSearch() {
-            const q = document.getElementById('mainSearchInput').value.trim().toUpperCase();
-            const res = document.getElementById('quickResult');
-            if (!q) { res.innerHTML = ""; return; }
-            const data = localStorage.getItem(KEY + q);
-            if (data) {
-                res.innerHTML = `<div class="result-card"><b>SKU: ${q}</b><img src="${data}"><div class="action-links no-print">
-                <button class="edit-btn" onclick="openEditModal('${KEY + q}')">Edit</button>
-                <button class="del-btn" onclick="deleteSingle('${KEY + q}')">Delete</button></div></div>`;
-            }
-        }
-
-        function renderAll() {
-            const list = document.getElementById('allList');
-            list.innerHTML = "";
-            let items = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                if (localStorage.key(i).startsWith(KEY)) items.push(localStorage.key(i));
-            }
-            items.sort().forEach(k => {
-                const sku = k.replace(KEY, "");
-                list.innerHTML += `<div class="grid-item">
-                    <input type="checkbox" class="item-checkbox no-print" data-key="${k}">
-                    <img src="${localStorage.getItem(k)}"><p>${sku}</p>
-                    <div class="action-links no-print">
-                        <button class="edit-btn" onclick="openEditModal('${k}')">Edit</button>
-                        <button class="del-btn" onclick="deleteSingle('${k}')">Delete</button>
-                    </div></div>`;
-            });
         }
 
         function toggleSelectAll() {
@@ -627,28 +299,16 @@
             document.getElementById('selAllBtn').innerText = isAllSelected ? "Unselect All" : "Select All";
         }
 
-        function downloadBackup() {
-            let obj = {};
-            for (let i = 0; i < localStorage.length; i++) {
-                const k = localStorage.key(i);
-                if (k.startsWith(KEY)) obj[k] = localStorage.getItem(k);
-            }
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([JSON.stringify(obj)], { type: "application/json" }));
-            a.download = "inventory_backup.json"; a.click();
+        function closeAllModals() {
+            document.getElementById('overlay').style.display = 'none';
+            document.querySelectorAll('.custom-modal').forEach(m => m.style.display = 'none');
         }
 
-        function restoreData(e) {
-            const r = new FileReader();
-            r.onload = (ev) => {
-                const data = JSON.parse(ev.target.result);
-                Object.keys(data).forEach(k => { if (k.startsWith(KEY)) localStorage.setItem(k, data[k]); });
-                location.reload();
-            };
-            r.readAsText(e.target.files[0]);
+        function showSuccess(msg) {
+            document.getElementById('successMsg').innerText = msg;
+            document.getElementById('successModal').style.display = 'block';
+            setTimeout(closeAllModals, 2000);
         }
-        updateCounter();
     </script>
 </body>
-
 </html>

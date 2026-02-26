@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHILPA CREATION INVENTORY MANAGEMENT</title>
+    <title>SSHILPA CREATION INVENTORY</title>
     <style>
         :root {
             --primary: #222;
@@ -14,9 +14,9 @@
             --accent: #007bff;
             --danger: #ff4757;
             --border: #eee;
+            --success: #28a745;
         }
 
-        /* Dark Mode Colors */
         [data-theme="dark"] {
             --primary: #f9f9f9;
             --bg: #121212;
@@ -43,7 +43,6 @@
             align-items: center;
         }
 
-        /* Theme Switcher */
         .theme-switch-wrapper {
             position: absolute;
             top: 15px;
@@ -58,13 +57,8 @@
             border-radius: 50%;
             cursor: pointer;
             font-size: 18px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        /* Pages */
         .page {
             display: none;
             width: 100%;
@@ -94,7 +88,6 @@
             margin: 20px 0;
         }
 
-        /* Stats & Search */
         .stats {
             background: var(--card);
             padding: 15px;
@@ -109,26 +102,16 @@
             color: var(--accent);
         }
 
-        .stats p {
-            font-size: 11px;
-            color: #888;
-            margin: 5px 0 0 0;
-            text-transform: uppercase;
-        }
-
         .main-search {
             width: 100%;
             padding: 15px;
             border-radius: 12px;
             border: 1px solid var(--border);
-            font-size: 16px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
             background: var(--card);
             color: var(--text);
+            margin-bottom: 20px;
         }
 
-        /* Menu */
         .menu-row {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -144,7 +127,6 @@
             text-align: center;
             cursor: pointer;
             font-size: 12px;
-            font-weight: 600;
             color: var(--text);
         }
 
@@ -156,16 +138,67 @@
             font-size: 14px;
         }
 
-        input[type="text"],
-        input[type="file"] {
+        input[type="text"] {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin-bottom: 15px;
             border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 15px;
             background: var(--card);
             color: var(--text);
+        }
+
+        /* --- ATTRACTIVE FILE INPUT BOX --- */
+        .file-upload-wrapper {
+            width: 100%;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .file-upload-box {
+            width: 100%;
+            height: 120px;
+            border: 2px dashed var(--accent);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--card);
+            cursor: pointer;
+            transition: 0.3s;
+            color: var(--accent);
+        }
+
+        .file-upload-box:hover {
+            background: rgba(0, 123, 255, 0.05);
+        }
+
+        .file-upload-box.has-file {
+            border-color: var(--success);
+            color: var(--success);
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .file-upload-box i {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .file-upload-box span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        #imageInput {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
         }
 
         .btn {
@@ -179,7 +212,16 @@
             cursor: pointer;
         }
 
-        /* Inventory Grid */
+        .btn-pdf {
+            background: var(--success);
+            color: white;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -245,7 +287,6 @@
             cursor: pointer;
         }
 
-        /* Modals */
         .overlay {
             display: none;
             position: fixed;
@@ -300,29 +341,42 @@
             margin: 0 auto 15px auto;
         }
 
-        .result-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 10px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .result-card img {
-            width: 100%;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-
         @media print {
-            .no-print {
-                display: none;
+            body {
+                background: white;
+                color: black;
+            }
+
+            .no-print,
+            .theme-switch-wrapper,
+            .back-link,
+            .action-links,
+            .item-checkbox,
+            .btn,
+            .theme-btn {
+                display: none !important;
             }
 
             .page {
-                display: block;
-                max-width: 100%;
+                display: block !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+
+            .grid {
+                grid-template-columns: 1fr 1fr 1fr !important;
+                gap: 10px !important;
+            }
+
+            .grid-item {
+                border: 1px solid #ddd !important;
+                background: white !important;
+                color: black !important;
+            }
+
+            h2 {
+                margin-top: 0;
+                color: black;
             }
         }
     </style>
@@ -353,7 +407,7 @@
 
     <div id="deleteModal" class="custom-modal">
         <h3 style="margin: 0 0 10px 0; color: var(--danger);">Delete?</h3>
-        <p style="font-size: 14px; opacity: 0.8;">Remove this item from inventory?</p>
+        <p style="font-size: 14px; opacity: 0.8;">Remove this item?</p>
         <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button class="btn" style="background: #eee; color: #333;" onclick="closeAllModals()">No</button>
             <button class="btn" style="background: var(--danger);" id="confirmDelBtn">Yes, Delete</button>
@@ -363,12 +417,12 @@
     <div id="homePage" class="page active-page">
         <h2>SHILPA CREATION</h2>
         <div class="stats"><b id="totalCount">0</b>
-            <p>TOTAL INVENTORY</p>
+            <p>Items in Stock</p>
         </div>
-        <input type="text" id="mainSearchInput" class="main-search" placeholder="🔍 Search SKU ID..."
+        <input type="text" id="mainSearchInput" class="main-search no-print" placeholder="🔍 Search SKU ID..."
             oninput="liveSearch()">
         <div id="quickResult"></div>
-        <div class="menu-row">
+        <div class="menu-row no-print">
             <div class="menu-btn" onclick="showPage('addPage')">➕<br>Add New</div>
             <div class="menu-btn" onclick="showPage('viewPage'); renderAll();">📦<br>Inventory</div>
             <div class="menu-btn" onclick="showPage('settingsPage')">⚙️<br>Backup</div>
@@ -379,13 +433,22 @@
         <span class="back-link" onclick="showPage('homePage')">← Back</span>
         <h2>Add New Saree</h2>
         <input type="text" id="skuInput" placeholder="Enter SKU ID">
-        <input type="file" id="imageInput" accept="image/*">
+
+        <div class="file-upload-wrapper">
+            <div class="file-upload-box" id="dropBox">
+                <i id="uploadIcon">📷</i>
+                <span id="fileNameDisplay">Tap to Select Photo</span>
+                <input type="file" id="imageInput" accept="image/*" onchange="updateFileName()">
+            </div>
+        </div>
+
         <button class="btn" onclick="saveData()">Save Product</button>
     </div>
 
     <div id="viewPage" class="page">
         <span class="back-link no-print" onclick="showPage('homePage')">← Back</span>
-        <h2>All Products</h2>
+        <h2 id="reportTitle">Stock Inventory</h2>
+        <button class="btn btn-pdf no-print" onclick="window.print()">📥 Download PDF Report</button>
         <div style="display: flex; gap: 10px; margin-bottom: 15px;" class="no-print">
             <button class="btn" style="background: #eee; color: #333; padding: 10px;" onclick="toggleSelectAll()"
                 id="selAllBtn">Select All</button>
@@ -410,7 +473,24 @@
         let isAllSelected = false;
         let currentActionKey = "";
 
-        // --- Theme Logic ---
+        // File Input UI Update
+        function updateFileName() {
+            const input = document.getElementById('imageInput');
+            const box = document.getElementById('dropBox');
+            const label = document.getElementById('fileNameDisplay');
+            const icon = document.getElementById('uploadIcon');
+
+            if (input.files.length > 0) {
+                label.innerText = "Photo Selected: " + input.files[0].name;
+                box.classList.add('has-file');
+                icon.innerText = "✅";
+            } else {
+                label.innerText = "Tap to Select Photo";
+                box.classList.remove('has-file');
+                icon.innerText = "📷";
+            }
+        }
+
         function toggleTheme() {
             const current = document.documentElement.getAttribute('data-theme');
             const target = current === 'dark' ? 'light' : 'dark';
@@ -418,18 +498,16 @@
             localStorage.setItem('inventory-theme', target);
             document.getElementById('themeBtn').innerText = target === 'dark' ? '☀️' : '🌙';
         }
-
-        // Load saved theme
         const savedTheme = localStorage.getItem('inventory-theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
-        document.getElementById('themeBtn').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
-
-        updateCounter();
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
             document.getElementById(pageId).classList.add('active-page');
-            if (pageId === 'homePage') { updateCounter(); document.getElementById('quickResult').innerHTML = ""; }
+            updateCounter();
+            // Reset file input box UI when page changes
+            document.getElementById('imageInput').value = "";
+            updateFileName();
         }
 
         function updateCounter() {
@@ -454,11 +532,12 @@
             const sIn = document.getElementById('skuInput');
             const fIn = document.getElementById('imageInput');
             const sku = sIn.value.trim().toUpperCase();
-            if (!sku || !fIn.files[0]) return;
+            if (!sku || !fIn.files[0]) { alert("Please enter SKU and select Photo!"); return; }
             const reader = new FileReader();
             reader.onload = (e) => {
                 localStorage.setItem(KEY + sku, e.target.result);
                 sIn.value = ""; fIn.value = "";
+                updateFileName();
                 showSuccess("Product Successfully Added");
                 updateCounter();
             };
@@ -467,9 +546,8 @@
 
         function openEditModal(key) {
             currentActionKey = key;
-            const oldSku = key.replace(KEY, "");
-            document.getElementById('oldSkuLabel').innerText = "Current ID: " + oldSku;
-            document.getElementById('editSkuInput').value = oldSku;
+            document.getElementById('oldSkuLabel').innerText = "Current ID: " + key.replace(KEY, "");
+            document.getElementById('editSkuInput').value = key.replace(KEY, "");
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('editModal').style.display = 'block';
         }
@@ -477,8 +555,6 @@
         function saveEditedSku() {
             const newSku = document.getElementById('editSkuInput').value.trim().toUpperCase();
             if (!newSku) return;
-            const oldSku = currentActionKey.replace(KEY, "");
-            if (newSku === oldSku) return closeAllModals();
             const imgData = localStorage.getItem(currentActionKey);
             localStorage.setItem(KEY + newSku, imgData);
             localStorage.removeItem(currentActionKey);
@@ -520,7 +596,7 @@
             if (!q) { res.innerHTML = ""; return; }
             const data = localStorage.getItem(KEY + q);
             if (data) {
-                res.innerHTML = `<div class="result-card"><b>SKU: ${q}</b><img src="${data}"><div class="action-links">
+                res.innerHTML = `<div class="result-card"><b>SKU: ${q}</b><img src="${data}"><div class="action-links no-print">
                 <button class="edit-btn" onclick="openEditModal('${KEY + q}')">Edit</button>
                 <button class="del-btn" onclick="deleteSingle('${KEY + q}')">Delete</button></div></div>`;
             }
@@ -529,19 +605,20 @@
         function renderAll() {
             const list = document.getElementById('allList');
             list.innerHTML = "";
+            let items = [];
             for (let i = 0; i < localStorage.length; i++) {
-                const k = localStorage.key(i);
-                if (k.startsWith(KEY)) {
-                    const sku = k.replace(KEY, "");
-                    list.innerHTML += `<div class="grid-item">
-                        <input type="checkbox" class="item-checkbox" data-key="${k}">
-                        <img src="${localStorage.getItem(k)}"><p>${sku}</p>
-                        <div class="action-links">
-                            <button class="edit-btn" onclick="openEditModal('${k}')">Edit</button>
-                            <button class="del-btn" onclick="deleteSingle('${k}')">Delete</button>
-                        </div></div>`;
-                }
+                if (localStorage.key(i).startsWith(KEY)) items.push(localStorage.key(i));
             }
+            items.sort().forEach(k => {
+                const sku = k.replace(KEY, "");
+                list.innerHTML += `<div class="grid-item">
+                    <input type="checkbox" class="item-checkbox no-print" data-key="${k}">
+                    <img src="${localStorage.getItem(k)}"><p>${sku}</p>
+                    <div class="action-links no-print">
+                        <button class="edit-btn" onclick="openEditModal('${k}')">Edit</button>
+                        <button class="del-btn" onclick="deleteSingle('${k}')">Delete</button>
+                    </div></div>`;
+            });
         }
 
         function toggleSelectAll() {
@@ -558,7 +635,7 @@
             }
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([JSON.stringify(obj)], { type: "application/json" }));
-            a.download = "inventory.json"; a.click();
+            a.download = "inventory_backup.json"; a.click();
         }
 
         function restoreData(e) {
@@ -570,6 +647,7 @@
             };
             r.readAsText(e.target.files[0]);
         }
+        updateCounter();
     </script>
 </body>
 

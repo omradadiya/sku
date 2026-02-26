@@ -1,354 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saree Inventory Live Cloud</title>
+    <title>Saree Inventory Cloud Pro</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database-compat.js"></script>
+
     <style>
-        :root {
-            --primary: #222;
-            --bg: #f9f9f9;
-            --card: #ffffff;
-            --text: #222;
-            --accent: #007bff;
-            --danger: #ff4757;
-            --border: #eee;
-            --success: #28a745;
+        :root { 
+            --primary: #222; --bg: #f9f9f9; --card: #ffffff; --text: #222; 
+            --accent: #007bff; --danger: #ff4757; --border: #eee; --success: #28a745;
         }
-
         [data-theme="dark"] {
-            --primary: #f9f9f9;
-            --bg: #121212;
-            --card: #1e1e1e;
-            --text: #ffffff;
-            --accent: #379aff;
-            --danger: #ff5e6c;
-            --border: #333;
+            --primary: #f9f9f9; --bg: #121212; --card: #1e1e1e; --text: #ffffff; 
+            --accent: #379aff; --danger: #ff5e6c; --border: #333;
         }
-
-        * {
-            box-sizing: border-box;
-            font-family: -apple-system, sans-serif;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
+        * { box-sizing: border-box; font-family: -apple-system, sans-serif; transition: background 0.3s, color 0.3s; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
         /* Sync Status Bar */
-        #syncStatus {
-            display: none;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: var(--accent);
-            color: white;
-            text-align: center;
-            font-size: 11px;
-            padding: 4px;
-            z-index: 2000;
-            font-weight: bold;
+        #syncStatus { 
+            display: none; position: fixed; top: 0; width: 100%; background: var(--accent); 
+            color: white; text-align: center; font-size: 11px; padding: 4px; z-index: 2000; font-weight: bold;
         }
 
-        .theme-switch-wrapper {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            z-index: 1001;
-        }
+        .theme-switch-wrapper { position: absolute; top: 15px; right: 20px; z-index: 1001; }
+        .theme-btn { background: var(--card); border: 1px solid var(--border); padding: 8px; border-radius: 50%; cursor: pointer; font-size: 18px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        .theme-btn {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 8px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-        }
+        .page { display: none; width: 100%; max-width: 450px; padding: 20px; animation: fadeIn 0.2s; }
+        .active-page { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .page {
-            display: none;
-            width: 100%;
-            max-width: 450px;
-            padding: 20px;
-            animation: fadeIn 0.2s;
-        }
+        h2 { font-weight: 500; font-size: 22px; text-align: center; margin: 20px 0; }
+        .stats { background: var(--card); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 10px; border: 1px solid var(--border); }
+        .stats b { font-size: 26px; color: var(--accent); }
+        
+        /* Refresh Button Row */
+        .refresh-row { display: flex; justify-content: center; margin-bottom: 20px; }
+        .refresh-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 6px; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-        .active-page {
-            display: block;
-        }
+        .main-search { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); margin-bottom: 20px; font-size: 16px; }
+        
+        .menu-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; }
+        .menu-btn { background: var(--card); border: 1px solid var(--border); padding: 15px 5px; border-radius: 12px; text-align: center; cursor: pointer; font-size: 12px; color: var(--text); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        .back-link { color: var(--accent); cursor: pointer; display: block; margin-bottom: 20px; font-size: 14px; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); font-size: 16px; }
+        
+        /* Attractive File Upload UI */
+        .file-upload-wrapper { width: 100%; position: relative; margin-bottom: 20px; }
+        .file-upload-box { width: 100%; height: 130px; border: 2px dashed var(--accent); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--card); color: var(--accent); text-align: center; padding: 10px; cursor: pointer; }
+        .file-upload-box.has-file { border-color: var(--success); color: var(--success); background: rgba(40, 167, 69, 0.05); }
+        #imageInput { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
+        .btn { width: 100%; padding: 14px; background: var(--primary); color: var(--bg); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-pdf { background: var(--success); color: white; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-            to {
-                opacity: 1;
-            }
-        }
+        /* Inventory Grid */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-item { background: var(--card); border: 1px solid var(--border); padding: 8px; border-radius: 12px; text-align: center; position: relative; }
+        .grid-item img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; background: #eee; }
+        .grid-item p { font-size: 13px; margin: 8px 0; font-weight: bold; }
+        
+        .item-checkbox { position: absolute; top: 10px; left: 10px; width: 22px; height: 22px; z-index: 5; }
+        .action-links { display: flex; gap: 5px; margin-top: 5px; }
+        .edit-btn { flex: 1; background: var(--accent); color: white; border: none; padding: 6px; border-radius: 6px; font-size: 11px; cursor: pointer; }
+        .del-btn { flex: 1; background: var(--danger); color: white; border: none; padding: 6px; border-radius: 6px; font-size: 11px; cursor: pointer; }
 
-        h2 {
-            font-weight: 500;
-            font-size: 22px;
-            text-align: center;
-            margin: 20px 0;
-        }
+        /* Custom Modals */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; }
+        .custom-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); color: var(--text); padding: 25px; border-radius: 20px; z-index: 1000; text-align: center; width: 85%; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popUp { from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 
-        .stats {
-            background: var(--card);
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-        }
-
-        .stats b {
-            font-size: 26px;
-            color: var(--accent);
-        }
-
-        .main-search {
-            width: 100%;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--text);
-            margin-bottom: 20px;
-        }
-
-        .menu-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .menu-btn {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 15px 5px;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 12px;
-            color: var(--text);
-        }
-
-        .back-link {
-            color: var(--accent);
-            cursor: pointer;
-            display: block;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--card);
-            color: var(--text);
-            font-size: 16px;
-        }
-
-        /* File Upload UI */
-        .file-upload-wrapper {
-            width: 100%;
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .file-upload-box {
-            width: 100%;
-            height: 130px;
-            border: 2px dashed var(--accent);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: var(--card);
-            color: var(--accent);
-            text-align: center;
-            padding: 10px;
-        }
-
-        .file-upload-box.has-file {
-            border-color: var(--success);
-            color: var(--success);
-            background: rgba(40, 167, 69, 0.05);
-        }
-
-        #imageInput {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: var(--bg);
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .btn-pdf {
-            background: var(--success);
-            color: white;
-            margin-bottom: 15px;
-        }
-
-        /* Grid */
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .grid-item {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 8px;
-            border-radius: 12px;
-            text-align: center;
-            position: relative;
-        }
-
-        .grid-item img {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            border-radius: 8px;
-            background: #eee;
-        }
-
-        .grid-item p {
-            font-size: 13px;
-            margin: 8px 0;
-            font-weight: bold;
-        }
-
-        .item-checkbox {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 22px;
-            height: 22px;
-            z-index: 5;
-        }
-
-        .action-links {
-            display: flex;
-            gap: 5px;
-            margin-top: 5px;
-        }
-
-        .edit-btn {
-            flex: 1;
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 11px;
-        }
-
-        .del-btn {
-            flex: 1;
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 11px;
-        }
-
-        /* Modals */
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 999;
-        }
-
-        .custom-modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--card);
-            color: var(--text);
-            padding: 25px;
-            border-radius: 20px;
-            z-index: 1000;
-            text-align: center;
-            width: 85%;
-            max-width: 320px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
+        /* Print Design */
         @media print {
-
-            .no-print,
-            .theme-switch-wrapper,
-            .back-link,
-            .action-links,
-            .item-checkbox,
-            .btn,
-            .theme-btn,
-            #syncStatus {
-                display: none !important;
-            }
-
-            .page {
-                display: block !important;
-                max-width: 100% !important;
-                padding: 0 !important;
-            }
-
-            .grid {
-                grid-template-columns: 1fr 1fr 1fr !important;
-                gap: 10px !important;
-            }
-
-            .grid-item {
-                border: 1px solid #ddd !important;
-                break-inside: avoid;
-            }
+            .no-print, .theme-switch-wrapper, .back-link, .action-links, .item-checkbox, .btn, .theme-btn, #syncStatus, .refresh-row { display: none !important; }
+            .page { display: block !important; max-width: 100% !important; padding: 0 !important; }
+            .grid { grid-template-columns: 1fr 1fr 1fr !important; gap: 10px !important; }
+            .grid-item { border: 1px solid #ddd !important; break-inside: avoid; background: white !important; color: black !important; }
+            h2 { margin-top: 0; color: black; }
         }
     </style>
 </head>
-
 <body>
 
     <div id="syncStatus">☁️ Syncing with Cloud...</div>
@@ -366,7 +101,7 @@
 
     <div id="editModal" class="custom-modal">
         <h3>Change SKU ID</h3>
-        <p id="oldSkuLabel" style="font-size: 12px; opacity: 0.7;"></p>
+        <p id="oldSkuLabel" style="font-size: 12px; opacity: 0.7; margin-bottom: 15px;"></p>
         <input type="text" id="editSkuInput">
         <div style="display: flex; gap: 10px;">
             <button class="btn" style="background: #eee; color: #333;" onclick="closeAllModals()">Cancel</button>
@@ -375,7 +110,8 @@
     </div>
 
     <div id="deleteModal" class="custom-modal">
-        <h3 style="color: var(--danger);">Delete?</h3>
+        <div style="font-size: 40px; color: var(--danger); margin-bottom: 10px;">🗑️</div>
+        <h3 style="color: var(--danger); margin: 0;">Delete?</h3>
         <p style="font-size: 14px;">Aa item badha j devices mathi nikli jashe.</p>
         <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button class="btn" style="background: #eee; color: #333;" onclick="closeAllModals()">No</button>
@@ -385,12 +121,17 @@
 
     <div id="homePage" class="page active-page">
         <h2>Live Inventory</h2>
-        <div class="stats"><b id="totalCount">...</b>
-            <p>Total Items in Cloud</p>
+        <div class="stats"><b id="totalCount">...</b><p>Total Items in Cloud</p></div>
+        
+        <div class="refresh-row no-print">
+            <button class="refresh-btn" onclick="location.reload()">
+                🔄 Refresh Cloud Sync
+            </button>
         </div>
-        <input type="text" id="mainSearchInput" class="main-search no-print" placeholder="🔍 Search SKU..."
-            oninput="liveSearch()">
+
+        <input type="text" id="mainSearchInput" class="main-search no-print" placeholder="🔍 Search SKU ID..." oninput="liveSearch()">
         <div id="quickResult"></div>
+        
         <div class="menu-row no-print">
             <div class="menu-btn" onclick="showPage('addPage')">➕<br>Add New</div>
             <div class="menu-btn" onclick="showPage('viewPage')">📦<br>Inventory</div>
@@ -402,12 +143,14 @@
         <span class="back-link" onclick="showPage('homePage')">← Back</span>
         <h2>Add Saree to Cloud</h2>
         <input type="text" id="skuInput" placeholder="Enter SKU ID (Ex: S-101)">
+        
         <div class="file-upload-wrapper">
             <div class="file-upload-box" id="dropBox">
-                <span id="fileNameDisplay" style="font-size: 14px;">📷 Tap to Upload Photo</span>
+                <span id="fileNameDisplay" style="font-size: 14px; font-weight: 500;">📷 Tap to Select Photo</span>
                 <input type="file" id="imageInput" accept="image/*" onchange="updateFileName()">
             </div>
         </div>
+        
         <button class="btn" id="saveBtn" onclick="saveData()">Save to Cloud</button>
     </div>
 
@@ -415,11 +158,10 @@
         <span class="back-link no-print" onclick="showPage('homePage')">← Back</span>
         <h2>Stock Report</h2>
         <button class="btn btn-pdf no-print" onclick="window.print()">📥 Download PDF Report</button>
+        
         <div style="display: flex; gap: 10px; margin-bottom: 15px;" class="no-print">
-            <button class="btn" style="background: #eee; color: #333; padding: 10px;" onclick="toggleSelectAll()"
-                id="selAllBtn">Select All</button>
-            <button class="btn" style="background: var(--danger); padding: 10px;" onclick="bulkDeleteConfirm()">Delete
-                Selected</button>
+            <button class="btn" style="background: #eee; color: #333; padding: 10px; font-size: 12px;" onclick="toggleSelectAll()" id="selAllBtn">Select All</button>
+            <button class="btn" style="background: var(--danger); padding: 10px; font-size: 12px;" onclick="bulkDeleteConfirm()">Delete Selected</button>
         </div>
         <div id="allList" class="grid"></div>
     </div>
@@ -427,16 +169,15 @@
     <div id="settingsPage" class="page">
         <span class="back-link" onclick="showPage('homePage')">← Back</span>
         <h2>Cloud Settings</h2>
-        <p style="text-align: center; font-size: 13px; opacity: 0.6;">Connected to: my-inventory-e25ca</p>
-        <div
-            style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 10px; font-size: 12px; margin-bottom: 20px;">
-            Darek device ma aa j file vaparvi jethi data sync thay.
+        <p style="text-align: center; font-size: 13px; opacity: 0.6;">Connected ID: my-inventory-e25ca</p>
+        <div style="background: rgba(255, 193, 7, 0.1); color: #856404; padding: 15px; border-radius: 12px; font-size: 12px; margin-bottom: 20px; border: 1px solid rgba(255, 193, 7, 0.2);">
+            Darek device ma aa j file vaparvi jethi data sync thay. Net chalu hovu jaruri che.
         </div>
-        <button class="btn" style="background: #444;" onclick="location.reload();">Refresh Sync</button>
+        <button class="btn" style="background: #444;" onclick="location.reload();">Hard Refresh Sync</button>
     </div>
 
     <script>
-        // --- Firebase Config (As provided by you) ---
+        // --- Firebase Config (Corrected & Stable) ---
         const firebaseConfig = {
             apiKey: "AIzaSyBk9p0rMNCvItvW3Hrmo8Uywtz_EZa0Yns",
             authDomain: "my-inventory-e25ca.firebaseapp.com",
@@ -454,7 +195,7 @@
         let currentActionKey = "";
         let isAllSelected = false;
 
-        // --- Real-time Listener: Aa function badha device ma data update karshe ---
+        // --- Live Cloud Listener ---
         db.on('value', (snapshot) => {
             inventoryData = snapshot.val() || {};
             updateCounter();
@@ -476,7 +217,7 @@
             localStorage.setItem('inventory-theme', target);
             document.getElementById('themeBtn').innerText = target === 'dark' ? '☀️' : '🌙';
         }
-        if (localStorage.getItem('inventory-theme') === 'dark') {
+        if(localStorage.getItem('inventory-theme') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
             document.getElementById('themeBtn').innerText = '☀️';
         }
@@ -484,31 +225,30 @@
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
             document.getElementById(pageId).classList.add('active-page');
-            if (pageId === 'viewPage') renderAll();
+            if(pageId === 'viewPage') renderAll();
         }
 
         function updateFileName() {
             const f = document.getElementById('imageInput').files[0];
-            document.getElementById('fileNameDisplay').innerText = f ? "✅ Selected: " + f.name : "📷 Tap to Upload Photo";
+            document.getElementById('fileNameDisplay').innerText = f ? "✅ Selected: " + f.name : "📷 Tap to Select Photo";
             document.getElementById('dropBox').classList.toggle('has-file', !!f);
         }
 
-        // --- Save Logic (Cloud) ---
+        // --- Save to Cloud ---
         function saveData() {
             const sku = document.getElementById('skuInput').value.trim().toUpperCase();
             const file = document.getElementById('imageInput').files[0];
-            if (!sku || !file) return alert("SKU and Photo are required!");
+            if (!sku || !file) { alert("SKU ID and Photo both required!"); return; }
 
             showSyncing();
             const reader = new FileReader();
             reader.onload = (e) => {
-                // Background process: Cloud ma save thashe
                 db.child(sku).set(e.target.result).then(() => {
                     document.getElementById('skuInput').value = "";
                     document.getElementById('imageInput').value = "";
                     updateFileName();
-                    showSuccess("Saved to Cloud!");
-                }).catch(err => alert("Error: " + err));
+                    showSuccess("Product Synced to Cloud!");
+                }).catch(err => alert("Cloud Error: " + err));
             };
             reader.readAsDataURL(file);
         }
@@ -517,8 +257,8 @@
             const list = document.getElementById('allList');
             list.innerHTML = "";
             const keys = Object.keys(inventoryData).sort();
-            if (keys.length === 0) { list.innerHTML = "<p style='grid-column: 1/3; opacity:0.5;'>No items found.</p>"; return; }
-
+            if(keys.length === 0) { list.innerHTML = "<p style='grid-column: 1/3; opacity:0.5; text-align:center;'>Cloud is empty.</p>"; return; }
+            
             keys.forEach(sku => {
                 list.innerHTML += `<div class="grid-item">
                     <input type="checkbox" class="item-checkbox no-print" data-sku="${sku}">
@@ -534,7 +274,7 @@
             const q = document.getElementById('mainSearchInput').value.trim().toUpperCase();
             const res = document.getElementById('quickResult');
             if (!q) { res.innerHTML = ""; return; }
-
+            
             if (inventoryData[q]) {
                 res.innerHTML = `<div class="grid-item" style="width:180px; margin: 0 auto 20px auto; border: 2px solid var(--accent);">
                     <img src="${inventoryData[q]}"><p>${q}</p>
@@ -543,7 +283,7 @@
                         <button class="del-btn" onclick="deleteItem('${q}')">Delete</button>
                     </div></div>`;
             } else {
-                res.innerHTML = "<p style='font-size:12px; opacity:0.5; text-align:center;'>SKU not found...</p>";
+                res.innerHTML = "<p style='font-size:12px; opacity:0.5; text-align:center;'>Item not found in cloud...</p>";
             }
         }
 
@@ -558,13 +298,13 @@
         function saveEditedSku() {
             const newSku = document.getElementById('editSkuInput').value.trim().toUpperCase();
             if (!newSku || newSku === currentActionKey) return closeAllModals();
-
+            
             showSyncing();
             const data = inventoryData[currentActionKey];
             db.child(newSku).set(data).then(() => {
                 db.child(currentActionKey).remove().then(() => {
                     closeAllModals();
-                    showSuccess("ID Updated!");
+                    showSuccess("SKU ID Updated!");
                 });
             });
         }
@@ -577,7 +317,7 @@
                 showSyncing();
                 db.child(sku).remove().then(() => {
                     closeAllModals();
-                    showSuccess("Deleted from Cloud!");
+                    showSuccess("Removed from Cloud!");
                 });
             };
         }
@@ -593,7 +333,7 @@
                 selected.forEach(sku => updates[sku] = null);
                 db.update(updates).then(() => {
                     closeAllModals();
-                    showSuccess("Items Deleted!");
+                    showSuccess("Multiple Items Deleted!");
                 });
             };
         }
@@ -616,5 +356,4 @@
         }
     </script>
 </body>
-
 </html>
